@@ -1,0 +1,288 @@
+/* =====================================================================
+   TP4 — Composant adaptatif : container queries — STARTER
+   Module CSS avancé — L3 — Jour 2
+
+   La même carte .event-card apparaît dans 3 contextes :
+     1. le bandeau « À la une »   (large)
+     2. la grille du programme    (moyen)
+     3. la barre latérale         (étroit)
+   Le développeur précédent a tout fait avec une media query… et ça casse.
+   Écrivez UNIQUEMENT là où se trouvent les « TODO étape N ».
+   Objectif final : AUCUNE media query de largeur dans ce fichier.
+   ===================================================================== */
+
+
+/* =====================================================================
+   0. BASE — tokens, reset, typographie
+   ===================================================================== */
+:root {
+  color-scheme: light;
+  --c-bg: oklch(97% 0.01 280);
+  --c-surface: oklch(100% 0 0);
+  --c-text: oklch(22% 0.03 280);
+  --c-text-muted: #9ca3af;      /* TODO étape 6 : contraste AA ? (vérifiez dans les DevTools) */
+  --c-border: oklch(88% 0.02 280);
+  --c-accent: oklch(48% 0.2 290);
+  --c-accent-hover: oklch(40% 0.18 290);
+  --c-warning: #f59e0b;         /* TODO étape 6 : contraste AA ? */
+  --c-focus: oklch(55% 0.25 330);
+  --radius: 0.9rem;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+body, h1, h2, h3, p, ul { margin: 0; }
+ul[role="list"] { list-style: none; padding: 0; }
+
+body {
+  font-family: var(--font);
+  line-height: 1.5;
+  background: var(--c-bg);
+  color: var(--c-text);
+}
+h1, h2, h3 { line-height: 1.15; text-wrap: balance; }
+h2 { font-size: clamp(1.35rem, 1.1rem + 1vw, 1.75rem); margin-block-end: 1rem; }
+
+/* TODO étape 6 : cette règle est une faute d'accessibilité. Remplacez-la. */
+a:focus { outline: none; }
+
+
+/* =====================================================================
+   HÉROS
+   ===================================================================== */
+.hero {
+  min-height: 60vh;             /* TODO étape 4 : unité adaptée au mobile ? (+ propriété logique) */
+  display: grid;
+  grid-template-rows: auto 1fr;
+  padding: clamp(1rem, 4vw, 2.5rem);
+  color: oklch(98% 0.01 280);
+  background:
+    radial-gradient(circle at 80% 20%, oklch(65% 0.25 330 / 0.55), transparent 45%),
+    radial-gradient(circle at 15% 85%, oklch(70% 0.18 200 / 0.45), transparent 40%),
+    linear-gradient(160deg, oklch(28% 0.12 290), oklch(18% 0.06 270));
+}
+.hero__bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem; }
+.logo { color: inherit; font-weight: 900; font-size: 1.25rem; text-decoration: none; letter-spacing: 0.05em; }
+.logo span { font-weight: 500; letter-spacing: 0; }
+.hero__content { align-self: center; max-inline-size: 48rem; padding-block: 2rem; }
+.hero__eyebrow { font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-size: 0.875rem; }
+.hero h1 {
+  font-size: 4.5rem;            /* TODO étape 4 : typo fluide avec clamp() (testez à 375 px !) */
+  margin-block: 0.75rem 1rem;
+  letter-spacing: -0.02em;
+}
+.hero__lead { font-size: 1.3rem; max-inline-size: 60ch; margin-block-end: 1.5rem; }
+
+
+/* =====================================================================
+   MISE EN PAGE DE LA PAGE (fournie, à lire) — sans media query !
+   « Sidebar intrinsèque » : la barre latérale passe sous le contenu
+   quand le contenu principal ne peut plus faire 34rem.
+   ===================================================================== */
+.layout {
+  display: flex; flex-wrap: wrap; gap: 2rem;
+  max-inline-size: 80rem; margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2rem);
+}
+.programme { flex: 999 1 34rem; min-inline-size: 0; display: grid; gap: 2.5rem; }
+.sidebar {
+  flex: 1 1 18rem;
+  border-left: 1px solid var(--c-border);   /* TODO étape 5 */
+  padding-left: 1.5rem;                     /* TODO étape 5 */
+}
+.sidebar__list { display: grid; gap: 1rem; }
+.agenda__grid {
+  display: grid; gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+}
+
+
+/* =====================================================================
+   TODO étape 2 — DÉCLARER LES CONTENEURS
+   ---------------------------------------------------------------------
+   Faites de chaque .event-card un conteneur de requête nommé « carte »,
+   qui n'observe que sa largeur. (Pourquoi pas la carte .event-card__inner ?)
+   ===================================================================== */
+
+
+
+/* =====================================================================
+   COMPOSANT — styles communs (fournis)
+   ===================================================================== */
+li > .event-card { block-size: 100%; }
+
+.event-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-left: 5px solid oklch(55% 0.2 var(--hue, 290));   /* TODO étape 5 */
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: translate 0.25s ease, box-shadow 0.25s ease; /* TODO étape 6 : reduced-motion */
+}
+.event-card:hover,
+.event-card:focus-within {
+  translate: 0 -4px;
+  box-shadow: 0 10px 30px -12px oklch(30% 0.1 290 / 0.35);
+}
+
+.event-card__inner {
+  position: relative;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.25rem;             /* TODO étape 4 : rembourrage proportionnel à la CARTE (cqi) */
+  block-size: 100%;
+}
+
+.event-card__visual {
+  grid-area: visual;
+  display: grid; place-items: center;
+  border-radius: calc(var(--radius) - 0.25rem);
+  color: oklch(97% 0.03 var(--hue));
+  background:
+    radial-gradient(circle at 25% 25%, oklch(85% 0.12 var(--hue) / 0.9), transparent 55%),
+    linear-gradient(135deg, oklch(55% 0.2 var(--hue)), oklch(30% 0.12 calc(var(--hue) + 50)));
+  --icon-hole: oklch(30% 0.12 var(--hue));
+}
+.event-card__visual svg {
+  width: 4rem;                  /* TODO étape 5 (et étape 4 : taille en cqi ?) */
+  height: auto;                 /* TODO étape 5 */
+  filter: drop-shadow(0 4px 6px oklch(0% 0 0 / 0.3));
+}
+
+.event-card__time {
+  grid-area: time;
+  align-self: start;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.5rem;
+  background: var(--c-text);
+  color: var(--c-surface);
+  font-weight: 800; font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.event-card__body { grid-area: body; display: grid; gap: 0.4rem; align-content: start; text-align: left; } /* TODO étape 5 */
+.event-card__tag {
+  justify-self: start;
+  margin-right: 0.5rem;         /* TODO étape 5 */
+  padding: 0.1rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+  background: oklch(94% 0.04 var(--hue, 290));
+  color: oklch(35% 0.12 var(--hue, 290));
+}
+.event-card__title {
+  font-size: 1.25rem;           /* TODO étape 4 : titre fluide selon la largeur de la CARTE */
+}
+.event-card__desc { color: var(--c-text-muted); }
+.event-card__meta { display: flex; flex-wrap: wrap; gap: 0.25rem 1rem; color: var(--c-text-muted); font-size: 0.875rem; }
+.event-card__meta li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.event-card__meta .ico { inline-size: 1rem; block-size: 1rem; flex: none; }
+.event-card__seats { color: var(--c-warning); font-weight: 700; }
+
+.event-card__actions { grid-area: actions; display: flex; flex-wrap: wrap; gap: 0.5rem; align-self: end; }
+
+
+/* =====================================================================
+   MISE EN PAGE DE LA CARTE — VERSION « MEDIA QUERY » (à remplacer)
+   ---------------------------------------------------------------------
+   TODO étape 1 : observez à 1280 px puis à 375 px. Qu'arrive-t-il à la
+   carte de la barre latérale ? Aux cartes de la grille ? Puis supprimez
+   (ou commentez) TOUT ce bloc.
+   ===================================================================== */
+.event-card__inner {
+  grid-template-areas:
+    "visual"
+    "body"
+    "actions";
+}
+.event-card__visual { aspect-ratio: 16 / 9; }
+.event-card__time {
+  position: absolute;
+  top: 1.85rem;                 /* TODO étape 5 */
+  left: 1.85rem;                /* TODO étape 5 */
+}
+
+@media (min-width: 700px) {
+  .event-card__inner {
+    grid-template-columns: minmax(14rem, 2fr) 3fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "visual body"
+      "visual actions";
+    column-gap: 2rem;
+  }
+  .event-card__visual { aspect-ratio: auto; min-height: 16rem; }
+  .event-card__time { font-size: 1.25rem; padding: 0.5rem 0.9rem; }
+}
+
+
+/* =====================================================================
+   TODO étape 3 — LES 3 MISES EN PAGE AVEC @container
+   ---------------------------------------------------------------------
+   A. Par défaut (carte < 18rem) : COMPACTE — pas de visuel, pas de
+      description, l'heure en pastille au-dessus du titre, boutons pleine largeur.
+   B. @container carte (width >= 18rem) : MOYENNE — verticale, visuel 16/9,
+      heure posée sur le visuel.
+   C. @container carte (width >= 42rem) : LARGE — horizontale, visuel à
+      gauche sur toute la hauteur (areas "visual body" / "visual actions").
+   ===================================================================== */
+
+
+
+/* =====================================================================
+   BOUTONS
+   ===================================================================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0.25rem 0.7rem;      /* TODO étape 6 : cible tactile ≥ 44 px */
+  border: 2px solid var(--c-accent);
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: oklch(100% 0 0);
+  font-weight: 700; font-size: 0.8rem;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.btn:hover { background: var(--c-accent-hover); border-color: var(--c-accent-hover); }
+.btn--ghost { background: transparent; color: var(--c-accent); }
+.btn--ghost:hover { background: oklch(48% 0.2 290 / 0.1); border-color: var(--c-accent); }
+.btn--light { background: oklch(100% 0 0); border-color: oklch(100% 0 0); color: oklch(30% 0.15 290); }
+.btn--light:hover { background: oklch(92% 0.04 290); border-color: oklch(92% 0.04 290); }
+
+
+/* =====================================================================
+   ANIMATION DU BANDEAU « À LA UNE »
+   ===================================================================== */
+.featured .event-card__visual {
+  background-size: 200% 200%, 100% 100%;
+  animation: halo 8s ease-in-out infinite alternate;
+}
+@keyframes halo {
+  from { background-position: 0% 0%, 0 0; }
+  to   { background-position: 100% 100%, 0 0; }
+}
+
+
+/* =====================================================================
+   TODO étape 6 — ACCESSIBILITÉ
+   ---------------------------------------------------------------------
+   :focus-visible, cibles ≥ 44 px, contrastes AA (corrigez les 2 tokens
+   signalés en haut du fichier), prefers-reduced-motion.
+   ===================================================================== */
+
+
+
+/* =====================================================================
+   EXERCICE D'APPROFONDISSEMENT (facultatif) — CONTENEUR NOMMÉ « sidebar » : mode frise
+   ===================================================================== */
+
+
+
+/* ---------- Pied de page ---------- */
+.site-footer {
+  padding: 2rem clamp(1rem, 3vw, 2rem);
+  text-align: center;
+  color: var(--c-text-muted);
+  border-block-start: 1px solid var(--c-border);
+  display: grid; gap: 0.5rem;
+}
